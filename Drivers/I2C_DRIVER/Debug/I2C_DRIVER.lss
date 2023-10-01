@@ -1,0 +1,290 @@
+
+I2C_DRIVER.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000018a  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .stab         00000678  00000000  00000000  000001e0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  2 .stabstr      00000967  00000000  00000000  00000858  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 ba 00 	call	0x174	; 0x174 <main>
+  64:	0c 94 c3 00 	jmp	0x186	; 0x186 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <I2C_Init>:
+#include <avr/io.h>
+
+#include "I2C_Private.h"
+
+void I2C_Init(void)
+{
+  6c:	df 93       	push	r29
+  6e:	cf 93       	push	r28
+  70:	cd b7       	in	r28, 0x3d	; 61
+  72:	de b7       	in	r29, 0x3e	; 62
+  // TWI initialization
+  // Bit Rate: 400.000 kHz
+  TWBR = 72;
+  74:	e0 e2       	ldi	r30, 0x20	; 32
+  76:	f0 e0       	ldi	r31, 0x00	; 0
+  78:	88 e4       	ldi	r24, 0x48	; 72
+  7a:	80 83       	st	Z, r24
+  // Two Wire Bus Slave Address: 0x1
+  // General Call Recognition: Off
+  TWAR = 0x02;//0b00000010
+  7c:	e2 e2       	ldi	r30, 0x22	; 34
+  7e:	f0 e0       	ldi	r31, 0x00	; 0
+  80:	82 e0       	ldi	r24, 0x02	; 2
+  82:	80 83       	st	Z, r24
+  // Generate Acknowledge Pulse: On
+  // TWI Interrupt: Off
+  TWCR = 0x44;//0b01000100
+  84:	e6 e5       	ldi	r30, 0x56	; 86
+  86:	f0 e0       	ldi	r31, 0x00	; 0
+  88:	84 e4       	ldi	r24, 0x44	; 68
+  8a:	80 83       	st	Z, r24
+  TWSR = 0x00;
+  8c:	e1 e2       	ldi	r30, 0x21	; 33
+  8e:	f0 e0       	ldi	r31, 0x00	; 0
+  90:	10 82       	st	Z, r1
+  TWSR &= (~((1 << TWPS1) | (1 << TWPS0)));
+  92:	a1 e2       	ldi	r26, 0x21	; 33
+  94:	b0 e0       	ldi	r27, 0x00	; 0
+  96:	e1 e2       	ldi	r30, 0x21	; 33
+  98:	f0 e0       	ldi	r31, 0x00	; 0
+  9a:	80 81       	ld	r24, Z
+  9c:	8c 7f       	andi	r24, 0xFC	; 252
+  9e:	8c 93       	st	X, r24
+}
+  a0:	cf 91       	pop	r28
+  a2:	df 91       	pop	r29
+  a4:	08 95       	ret
+
+000000a6 <TWIStart>:
+
+void TWIStart(void)
+{
+  a6:	df 93       	push	r29
+  a8:	cf 93       	push	r28
+  aa:	cd b7       	in	r28, 0x3d	; 61
+  ac:	de b7       	in	r29, 0x3e	; 62
+  // Send Start Condition
+  TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
+  ae:	e6 e5       	ldi	r30, 0x56	; 86
+  b0:	f0 e0       	ldi	r31, 0x00	; 0
+  b2:	84 ea       	ldi	r24, 0xA4	; 164
+  b4:	80 83       	st	Z, r24
+
+  // Wait for TWINT flag set in TWCR Register
+  while (!(TWCR & (1 << TWINT)));
+  b6:	e6 e5       	ldi	r30, 0x56	; 86
+  b8:	f0 e0       	ldi	r31, 0x00	; 0
+  ba:	80 81       	ld	r24, Z
+  bc:	88 23       	and	r24, r24
+  be:	dc f7       	brge	.-10     	; 0xb6 <TWIStart+0x10>
+}
+  c0:	cf 91       	pop	r28
+  c2:	df 91       	pop	r29
+  c4:	08 95       	ret
+
+000000c6 <TWIStop>:
+
+void TWIStop(void)
+{
+  c6:	df 93       	push	r29
+  c8:	cf 93       	push	r28
+  ca:	cd b7       	in	r28, 0x3d	; 61
+  cc:	de b7       	in	r29, 0x3e	; 62
+  // Send Stop Condition
+  TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
+  ce:	e6 e5       	ldi	r30, 0x56	; 86
+  d0:	f0 e0       	ldi	r31, 0x00	; 0
+  d2:	84 e9       	ldi	r24, 0x94	; 148
+  d4:	80 83       	st	Z, r24
+}
+  d6:	cf 91       	pop	r28
+  d8:	df 91       	pop	r29
+  da:	08 95       	ret
+
+000000dc <TWIWrite>:
+
+void TWIWrite(unsigned char data)
+{
+  dc:	df 93       	push	r29
+  de:	cf 93       	push	r28
+  e0:	0f 92       	push	r0
+  e2:	cd b7       	in	r28, 0x3d	; 61
+  e4:	de b7       	in	r29, 0x3e	; 62
+  e6:	89 83       	std	Y+1, r24	; 0x01
+  // Put data On TWI Register
+  TWDR = data;
+  e8:	e3 e2       	ldi	r30, 0x23	; 35
+  ea:	f0 e0       	ldi	r31, 0x00	; 0
+  ec:	89 81       	ldd	r24, Y+1	; 0x01
+  ee:	80 83       	st	Z, r24
+  // Send Data
+  TWCR = (1 << TWINT) | (1 << TWEN);
+  f0:	e6 e5       	ldi	r30, 0x56	; 86
+  f2:	f0 e0       	ldi	r31, 0x00	; 0
+  f4:	84 e8       	ldi	r24, 0x84	; 132
+  f6:	80 83       	st	Z, r24
+  // Wait for TWINT flag set in TWCR Register
+  while (!(TWCR & (1 << TWINT)));
+  f8:	e6 e5       	ldi	r30, 0x56	; 86
+  fa:	f0 e0       	ldi	r31, 0x00	; 0
+  fc:	80 81       	ld	r24, Z
+  fe:	88 23       	and	r24, r24
+ 100:	dc f7       	brge	.-10     	; 0xf8 <TWIWrite+0x1c>
+}
+ 102:	0f 90       	pop	r0
+ 104:	cf 91       	pop	r28
+ 106:	df 91       	pop	r29
+ 108:	08 95       	ret
+
+0000010a <TWIReadACK>:
+
+unsigned char TWIReadACK(void)
+{
+ 10a:	df 93       	push	r29
+ 10c:	cf 93       	push	r28
+ 10e:	cd b7       	in	r28, 0x3d	; 61
+ 110:	de b7       	in	r29, 0x3e	; 62
+  TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA);    //enable Ack
+ 112:	e6 e5       	ldi	r30, 0x56	; 86
+ 114:	f0 e0       	ldi	r31, 0x00	; 0
+ 116:	84 ec       	ldi	r24, 0xC4	; 196
+ 118:	80 83       	st	Z, r24
+  // Wait for TWINT flag set in TWCR Register
+  while (!(TWCR & (1 << TWINT)))
+ 11a:	e6 e5       	ldi	r30, 0x56	; 86
+ 11c:	f0 e0       	ldi	r31, 0x00	; 0
+ 11e:	80 81       	ld	r24, Z
+ 120:	88 23       	and	r24, r24
+ 122:	dc f7       	brge	.-10     	; 0x11a <TWIReadACK+0x10>
+    ;
+  // Read Data
+  return TWDR;
+ 124:	e3 e2       	ldi	r30, 0x23	; 35
+ 126:	f0 e0       	ldi	r31, 0x00	; 0
+ 128:	80 81       	ld	r24, Z
+}
+ 12a:	cf 91       	pop	r28
+ 12c:	df 91       	pop	r29
+ 12e:	08 95       	ret
+
+00000130 <TWIReadNACK>:
+
+unsigned char TWIReadNACK(void)
+{
+ 130:	df 93       	push	r29
+ 132:	cf 93       	push	r28
+ 134:	cd b7       	in	r28, 0x3d	; 61
+ 136:	de b7       	in	r29, 0x3e	; 62
+  TWCR = (1 << TWINT) | (1 << TWEN);
+ 138:	e6 e5       	ldi	r30, 0x56	; 86
+ 13a:	f0 e0       	ldi	r31, 0x00	; 0
+ 13c:	84 e8       	ldi	r24, 0x84	; 132
+ 13e:	80 83       	st	Z, r24
+  // Wait for TWINT flag set in TWCR Register
+  while (!(TWCR & (1 << TWINT)))
+ 140:	e6 e5       	ldi	r30, 0x56	; 86
+ 142:	f0 e0       	ldi	r31, 0x00	; 0
+ 144:	80 81       	ld	r24, Z
+ 146:	88 23       	and	r24, r24
+ 148:	dc f7       	brge	.-10     	; 0x140 <TWIReadNACK+0x10>
+    ;
+  // Read Data
+  return TWDR;
+ 14a:	e3 e2       	ldi	r30, 0x23	; 35
+ 14c:	f0 e0       	ldi	r31, 0x00	; 0
+ 14e:	80 81       	ld	r24, Z
+}
+ 150:	cf 91       	pop	r28
+ 152:	df 91       	pop	r29
+ 154:	08 95       	ret
+
+00000156 <TWIGetStatus>:
+
+unsigned char TWIGetStatus(void)
+{
+ 156:	df 93       	push	r29
+ 158:	cf 93       	push	r28
+ 15a:	0f 92       	push	r0
+ 15c:	cd b7       	in	r28, 0x3d	; 61
+ 15e:	de b7       	in	r29, 0x3e	; 62
+  unsigned char status;
+  status = TWSR & 0xF8;
+ 160:	e1 e2       	ldi	r30, 0x21	; 33
+ 162:	f0 e0       	ldi	r31, 0x00	; 0
+ 164:	80 81       	ld	r24, Z
+ 166:	88 7f       	andi	r24, 0xF8	; 248
+ 168:	89 83       	std	Y+1, r24	; 0x01
+  return status;
+ 16a:	89 81       	ldd	r24, Y+1	; 0x01
+}
+ 16c:	0f 90       	pop	r0
+ 16e:	cf 91       	pop	r28
+ 170:	df 91       	pop	r29
+ 172:	08 95       	ret
+
+00000174 <main>:
+#include "STD_TYPES.h"
+#include "BIT_CALC.h"
+
+#include "I2C_Private.h"
+
+int main(){
+ 174:	df 93       	push	r29
+ 176:	cf 93       	push	r28
+ 178:	cd b7       	in	r28, 0x3d	; 61
+ 17a:	de b7       	in	r29, 0x3e	; 62
+ 17c:	80 e0       	ldi	r24, 0x00	; 0
+ 17e:	90 e0       	ldi	r25, 0x00	; 0
+
+}
+ 180:	cf 91       	pop	r28
+ 182:	df 91       	pop	r29
+ 184:	08 95       	ret
+
+00000186 <_exit>:
+ 186:	f8 94       	cli
+
+00000188 <__stop_program>:
+ 188:	ff cf       	rjmp	.-2      	; 0x188 <__stop_program>
